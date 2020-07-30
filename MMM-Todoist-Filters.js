@@ -9,7 +9,7 @@
  */
 
 // for PIR Sensor module
-let UserPresence = true;
+//let UserPresence = true;
 
 Module.register("MMM-Todoist-Filters", {
     defaults: {
@@ -188,9 +188,15 @@ Module.register("MMM-Todoist-Filters", {
     },
     // create array to put filter/item objects into after filtering and sorting
     filteredItems: [],
-    filterTodoistData: function(tasks) {
+    filterTodoistData: function(apiTasks) {
 
         let self = this;
+        this.tasks = {
+            "items": apiTasks.items,
+            "projects": apiTasks.projects,
+            "labels": apiTasks.labels,
+            "collaborators": apiTasks.collaborators
+        };
         let filters = self.config.filters;
         // get filter criteria in format matching API
         for ( let f of self.config.filters ) {
@@ -203,7 +209,7 @@ Module.register("MMM-Todoist-Filters", {
                 if (c.projects) {
                     c.filterProjects = [];
                     if (c.excludeProjects) {
-                        for (let projectObject of tasks.projects) {
+                        for (let projectObject of apiTasks.projects) {
                             if (c.projects.includes(projectObject.name)) {
                                 break;
                             }
@@ -225,7 +231,7 @@ Module.register("MMM-Todoist-Filters", {
                 if (c.labels) {
                     c.filterLabels = [];
                     if (c.excludeLabels) {
-                        for (let labelObject of tasks.labels) {
+                        for (let labelObject of apiTasks.labels) {
                             if (c.labels.includes(labelObject.name)) {
                                 break;
                             }
@@ -233,7 +239,7 @@ Module.register("MMM-Todoist-Filters", {
                         }
                     } else {
                         for (let labelName of c.labels) {
-                            for (let labelObject of tasks.labels) {
+                            for (let labelObject of apiTasks.labels) {
                                 if (labelObject.name === labelName) {
                                     c.filterLabels.push(labelObject.id);
                                     break;
@@ -254,7 +260,7 @@ Module.register("MMM-Todoist-Filters", {
             });
         };
         // for each item, check against each filter's criteria
-        for (let item of tasks.items) {
+        for (let item of apiTasks.items) {
             let added = false;
             for (let f of self.config.filters) {
                 for (let c of f.criteria) {
@@ -369,7 +375,6 @@ Module.register("MMM-Todoist-Filters", {
                 config: f.config
             });
         });
-        console.log(self.filteredItems);
     },
     parseDueDate: function(date) {
         let [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
