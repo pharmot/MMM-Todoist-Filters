@@ -59,7 +59,7 @@ Module.register("MMM-Todoist-Filters", {
 
         // by default it is considered displayed. Note : core function "this.hidden" has strange behavior, so not used here
         this._hidden = false;
-        this._userPresence: true,
+        this._userPresence = true;
         this.title = "Loading...";
         this.loaded = false;
 
@@ -98,7 +98,7 @@ Module.register("MMM-Todoist-Filters", {
             this._userPresence = payload;
         }
     },
-    
+
     /**
      * Shortens a string if it's longer than maxLength and add a ellipsis to the end
      *
