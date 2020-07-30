@@ -9,7 +9,7 @@
  */
 
 // for PIR Sensor module
-//let UserPresence = true;
+var UserPresence = true;
 
 Module.register("MMM-Todoist-Filters", {
     defaults: {
@@ -217,7 +217,7 @@ Module.register("MMM-Todoist-Filters", {
                         }
                     } else {
                         for (let projectName of c.projects) {
-                            for (let projectObject of tasks.projects) {
+                            for (let projectObject of apiTasks.projects) {
                                 if (projectObject.name === projectName) {
                                     c.filterProjects.push(projectObject.id);
                                     break;
