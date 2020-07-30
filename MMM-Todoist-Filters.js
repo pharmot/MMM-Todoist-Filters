@@ -43,7 +43,6 @@ Module.register("MMM-Todoist-Filters", {
             }]
         }],
     },
-    _userPresence: true,
     getStyles: function() {
         return ["MMM-Todoist-Filters.min.css"];
     },
@@ -58,13 +57,9 @@ Module.register("MMM-Todoist-Filters", {
         let self = this;
         Log.info(`[${this.name}] Starting module`);
 
-        // Definition of the IntervalID to be able to stop and start it again
-        this.updateIntervalID = 0;
-
         // by default it is considered displayed. Note : core function "this.hidden" has strange behavior, so not used here
         this._hidden = false;
-
-        //to display "Loading..." at start-up
+        this._userPresence: true,
         this.title = "Loading...";
         this.loaded = false;
 
@@ -73,12 +68,13 @@ Module.register("MMM-Todoist-Filters", {
             return;
         }
 
-        this.sendSocketNotification("FETCH_TODOIST", this.config);
+        self.sendSocketNotification("FETCH_TODOIST", this.config);
 
-        //add ID to the setInterval function to be able to stop it later on
-        this.updateIntervalID = setInterval(function() {
-            self.sendSocketNotification("FETCH_TODOIST", self.config);
-        }, this.config.updateInterval);
+        setInterval(function() {
+            if ( self._userPresence === true && self._hidden === false ) {
+                self.sendSocketNotification("FETCH_TODOIST", self.config);
+            }
+        }, self.config.updateInterval);
     },
     // called by core when module is not displayed
     suspend: function() {
@@ -86,7 +82,6 @@ Module.register("MMM-Todoist-Filters", {
         if (self.config.debug) {
             Log.log(`[${this.name}] SUSPEND: ModuleHidden = ${ModuleHidden}`);
         }
-        this.GestionUpdateIntervalToDoIst();
     },
     // called by core when module is displayed
     resume: function() {
@@ -94,7 +89,6 @@ Module.register("MMM-Todoist-Filters", {
         if (self.config.debug) {
             Log.log(`[${this.name}] RESUME: ModuleHidden = ${ModuleHidden}`);
         }
-        this.GestionUpdateIntervalToDoIst();
     },
     notificationReceived: function(notification, payload) {
         if (this.config.debug) {
@@ -102,32 +96,9 @@ Module.register("MMM-Todoist-Filters", {
         }
         if (notification === "USER_PRESENCE") { // notification sent by module MMM-PIR-Sensor. See its doc
             this._userPresence = payload;
-            this.GestionUpdateIntervalToDoIst();
         }
     },
-    GestionUpdateIntervalToDoIst: function() {
-        let self = this;
-        if (self._userPresence === true && self._hidden === false) {
-
-
-            // update now
-            self.sendSocketNotification("FETCH_TODOIST", self.config);
-
-            //if no IntervalID defined, we set one again. This is to avoid several setInterval simultaneously
-            if (self.updateIntervalID === 0) {
-
-                self.updateIntervalID = setInterval(function() {
-                    self.sendSocketNotification("FETCH_TODOIST", self.config);
-                }, self.config.updateInterval);
-            }
-
-        } else { //if (userPresence = false OR ModuleHidden = true)
-            Log.log(`[${self.name}] userPresence is false or moduleHidden is true: Stop updating`);
-            clearInterval(self.updateIntervalID); // stop the update interval of this module
-            self.updateIntervalID = 0; //reset the flag to be able to start another one at resume
-        }
-    },
-
+    
     /**
      * Shortens a string if it's longer than maxLength and add a ellipsis to the end
      *
@@ -179,7 +150,6 @@ Module.register("MMM-Todoist-Filters", {
                 this.lastUpdate = Date.now() / 1000; //save the timestamp of the last update to be able to display it
                 Log.log(`[${this.name}] Todoist tasks updated at ${moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat)}`);
             }
-
             this.loaded = true;
             this.updateDom(1000);
         } else if (notification === "FETCH_ERROR") {
@@ -538,7 +508,6 @@ Module.register("MMM-Todoist-Filters", {
         grid.className = "tdf-grid-container tdf-grid-" + gridColumns;
         self.filteredItems.forEach(f => {
             if (f.items.length === 0 && !f.config.showWhenEmpty) {
-                console.log(`${f.name} has no items and is not shown when empty`);
                 return;
             }
 
@@ -550,7 +519,6 @@ Module.register("MMM-Todoist-Filters", {
             }
 
             if ( f.items.length === 0 ) {
-                console.log(`${f.name} has no items`);
                 let emptyDiv = document.createElement("div");
                 emptyDiv.className = "tdf-empty dimmed xsmall light";
                 emptyDiv.innerHTML = this.translate("NOTASKS");
