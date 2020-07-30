@@ -1,0 +1,24 @@
+{
+  "name": "mmm-todoist-filters",
+  "version": "0.1.0",
+  "description": "Todoist module for the Magic Mirror including support for filtered groups.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pharmot/MMM-Todoist-Filters.git"
+  },
+  "keywords": [
+    "magic mirror",
+    "smart mirror",
+    "todoist",
+    "module"
+  ],
+  "author": "Andy Briggs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pharmot/MMM-Todoist-Filters/issues"
+  },
+  "homepage": "https://github.com/pharmot/MMM-Todoist-Filters#readme",
+  "dependencies": {
+    "request": "^2.88.2"
+  }
+}

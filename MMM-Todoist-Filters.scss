@@ -1,0 +1,154 @@
+$ff-condensed: "Roboto Condensed", arial, helvetica, sans-serif;
+$clr-p1: #ac0000; // #d1453b in Todoist
+$clr-p2: #f8dd70; // #eb8909 in Todoist
+$clr-p3: #6fc4f5; // #246fe0 in Todoist
+$clr-overdue: #b41919;
+$clr-today: #03a05c;
+$clr-tomorrow: #166cec;
+$todoist-colors: (
+    30: #b8256f,
+    31: #db4035,
+    32: #f93,
+    33: #fad000,
+    34: #afb83b,
+    35: #7ecc49,
+    36: #299438,
+    37: #6accbc,
+    38: #158fad,
+    39: #14aaf5,
+    40: #96c3eb,
+    41: #4073ff,
+    42: #884dff,
+    43: #af38eb,
+    44: #eb96eb,
+    45: #e05194,
+    46: #ff8d85,
+    47: #808080,
+    48: #b8b8b8,
+    49: #ccac93
+);
+
+@each $colorID, $colorCode in $todoist-colors {
+    .tdf-label.tdf-color-#{$colorID} {
+        color: $colorCode;
+    }
+    .tdf-proj-color.tdf-color-#{$colorID} {
+        background-color: $colorCode;
+        color: $colorCode;
+    }
+}
+
+$col0: "";
+$col4: 16px;
+$col5: auto;
+$col6: minmax(0, 27px);
+
+.tdf-grid-container {
+    display: grid;
+    grid-column-gap: 4px;
+    grid-row-gap: 1px;
+    align-items: center;
+}
+
+@mixin grid-cols($c4, $c5, $c6) {
+    grid-template-columns: 9px max-content min-content #{$c4} #{$c5} #{$c6};
+}
+
+.tdf-grid-ooo { @include grid-cols($col0, $col0, $col0); }
+.tdf-grid-xoo { @include grid-cols($col4, $col0, $col0); }
+.tdf-grid-oxo { @include grid-cols($col0, $col5, $col0); }
+.tdf-grid-oox { @include grid-cols($col0, $col0, $col6); }
+.tdf-grid-xxo { @include grid-cols($col4, $col5, $col0); }
+.tdf-grid-xox { @include grid-cols($col4, $col0, $col6); }
+.tdf-grid-oxx { @include grid-cols($col0, $col5, $col6); }
+.tdf-grid-xxx { @include grid-cols($col4, $col5, $col6); }
+
+.tdf-heading {
+    grid-column: 1 / - 1;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #666;
+    padding-bottom: 5px;
+    font-size: 15px;
+    line-height: 15px;
+    font-family: $ff-condensed;
+    font-weight: 400;
+    color: #999;
+    text-align: left;
+    text-transform: uppercase;
+
+    &:first-child {
+        margin-top: 0;
+    }
+}
+
+.tdf-empty {
+    grid-column: 2 / - 1;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    text-align: left;
+}
+
+.tdf-priority {
+    grid-column: 1;
+    width: 5px;
+    height: 22px;
+}
+
+.tdf-p1 { background-color: $clr-p1; }
+.tdf-p2 { background-color: $clr-p2; }
+.tdf-p3 { background-color: $clr-p3; }
+
+.tdf-title {
+    grid-column: 2;
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.tdf-label {
+    margin-bottom: -2px;
+    padding-top: 2px;
+    padding-left: 6px;
+    font-size: 0.65em;
+}
+
+.tdf-due-date {
+    grid-column: 3;
+    white-space: nowrap;
+}
+
+.tdf-overdue { color: $clr-overdue; }
+.tdf-today { color: $clr-today; }
+.tdf-tomorrow { color: $clr-tomorrow; }
+
+.tdf-proj-color {
+    grid-column: 4;
+    align-self: center;
+    padding: 0;
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 12px;
+    vertical-align: top;
+    margin-left: 5px;
+    margin-right: -2px;
+}
+
+.tdf-proj-name {
+    grid-column: 5;
+    align-self: center;
+}
+
+.tdf-avatar-wrapper {
+    grid-column: 6;
+}
+
+.tdf-avatar-img {
+    border-radius: 50%;
+    height: 27px;
+    display: block;
+    margin-left: 10px;
+    margin-right: auto;
+}
