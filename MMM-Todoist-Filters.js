@@ -8,8 +8,6 @@
  * MIT Licensed.
  */
 
-// for PIR Sensor module
-var UserPresence = true;
 
 Module.register("MMM-Todoist-Filters", {
     defaults: {
@@ -45,6 +43,7 @@ Module.register("MMM-Todoist-Filters", {
             }]
         }],
     },
+    _userPresence: true,
     getStyles: function() {
         return ["MMM-Todoist-Filters.min.css"];
     },
@@ -98,33 +97,34 @@ Module.register("MMM-Todoist-Filters", {
         this.GestionUpdateIntervalToDoIst();
     },
     notificationReceived: function(notification, payload) {
-        if (self.config.debug) {
+        if (this.config.debug) {
             Log.log(`[${this.name}] Notification Received: ${notification} : payload = ${payload})`);
         }
         if (notification === "USER_PRESENCE") { // notification sent by module MMM-PIR-Sensor. See its doc
-            userPresence = payload;
+            this._userPresence = payload;
             this.GestionUpdateIntervalToDoIst();
         }
     },
     GestionUpdateIntervalToDoIst: function() {
-        if (userPresence === true && this._hidden === false) {
-            let self = this;
+        let self = this;
+        if (self._userPresence === true && self._hidden === false) {
+
 
             // update now
-            this.sendSocketNotification("FETCH_TODOIST", this.config);
+            self.sendSocketNotification("FETCH_TODOIST", self.config);
 
             //if no IntervalID defined, we set one again. This is to avoid several setInterval simultaneously
-            if (this.updateIntervalID === 0) {
+            if (self.updateIntervalID === 0) {
 
-                this.updateIntervalID = setInterval(function() {
+                self.updateIntervalID = setInterval(function() {
                     self.sendSocketNotification("FETCH_TODOIST", self.config);
-                }, this.config.updateInterval);
+                }, self.config.updateInterval);
             }
 
         } else { //if (userPresence = false OR ModuleHidden = true)
             Log.log(`[${self.name}] userPresence is false or moduleHidden is true: Stop updating`);
-            clearInterval(this.updateIntervalID); // stop the update interval of this module
-            this.updateIntervalID = 0; //reset the flag to be able to start another one at resume
+            clearInterval(self.updateIntervalID); // stop the update interval of this module
+            self.updateIntervalID = 0; //reset the flag to be able to start another one at resume
         }
     },
 
