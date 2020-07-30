@@ -1,11 +1,7 @@
 "use strict";
 
 /* Magic Mirror
- * Module: MMM-Todoist
- *
- * By Chris Brooker
- *
- * MIT Licensed.
+ * Module: MMM-Todoist-Filters
  */
 
 const NodeHelper = require("node_helper");
@@ -26,7 +22,7 @@ module.exports = NodeHelper.create({
 	fetchTodos : function() {
 		var self = this;
 		//request.debug = true;
-		var acessCode = self.config.accessToken;
+		var accessCode = self.config.accessToken;
 		request({
 			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
 			method: "POST",
@@ -45,18 +41,17 @@ module.exports = NodeHelper.create({
 				self.sendSocketNotification("FETCH_ERROR", {
 					error: error
 				});
-				return console.error(" ERROR - MMM-Todoist: " + error);
+				return console.error("[MMM-Todoist-Filter] ERROR : " + error);
 			}
 			if(self.config.debug){
 				console.log(body);
 			}
 			if (response.statusCode === 200) {
 				var taskJson = JSON.parse(body);
-				taskJson.accessToken = acessCode;
+				taskJson.accessToken = accessCode;
 				self.sendSocketNotification("TASKS", taskJson);
-			}
-			else{
-				console.log("Todoist api request status="+response.statusCode);
+			} else {
+				console.log("[MMM-Todoist-Filter] API Request Status: " + response.statusCode);
 			}
 
 		});

@@ -16,7 +16,6 @@ Module.register("MMM-Todoist-Filters", {
         updateInterval: 10 * 60 * 1000, // every 10 minutes,
         fade: true,
         fadePoint: 0.25,
-        sortType: "todoist",
         displayLastUpdate: false, //add or not a line after the tasks with the last server update time
         displayLastUpdateFormat: "dd - HH:mm:ss", //format to display the last update. See Moment.js documentation for all display possibilities
         maxTitleLength: 40, //10 to 50. Value to cut the line if wrapEvents: true
