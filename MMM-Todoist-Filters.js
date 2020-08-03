@@ -170,7 +170,7 @@ Module.register("MMM-Todoist-Filters", {
             this.lastUpdate = moment();
             this.filterTodoistData(payload);
             Log.log(`[${this.name}] Todoist tasks updated at ${this.lastUpdate.format(this.displayUpdateFormat)}`);
-            }
+            
             this.loaded = true;
             this.updateDom(1000);
         } else if (notification === "FETCH_ERROR") {
