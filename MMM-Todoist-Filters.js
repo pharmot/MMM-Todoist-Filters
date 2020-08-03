@@ -11,11 +11,11 @@
 
 Module.register("MMM-Todoist-Filters", {
     defaults: {
-        updateInterval: 10 * 60 * 1000, // every 10 minutes,
+        updateInterval: 10 * 60 * 1000, // in ms (default every 10 minutes)
         fade: true,
         fadePoint: 0.25,
         displayLastUpdate: false, //add or not a line after the tasks with the last server update time
-        displayLastUpdateFormat: "dd - HH:mm:ss", //format to display the last update. See Moment.js documentation for all display possibilities
+        displayLastUpdateFormat: "M/D HH:mm", //format to display the last update. See Moment.js documentation for all display possibilities
         maxTitleLength: 40, //10 to 50. Value to cut the line if wrapEvents: true
         wrapEvents: false, // wrap events to multiple lines breaking at maxTitleLength
         displaySubtasks: true, // set to false to exclude subtasks // TODO: make this functional
@@ -54,27 +54,39 @@ Module.register("MMM-Todoist-Filters", {
         };
     },
     start: function() {
-        let self = this;
         Log.info(`[${this.name}] Starting module`);
-
-        // by default it is considered displayed. Note : core function "this.hidden" has strange behavior, so not used here
+        let self = this;
         this._hidden = false;
         this._userPresence = true;
         this.title = "Loading...";
         this.loaded = false;
+        this.lastUpdate = null;
+        this.updater = null;
 
         if (this.config.accessToken === "") {
             Log.error(`[${this.name}] ERROR: access token not set`);
             return;
         }
+        startUpdating();
 
-        self.sendSocketNotification("FETCH_TODOIST", this.config);
-
-        setInterval(function() {
-            if ( self._userPresence === true && self._hidden === false ) {
-                self.sendSocketNotification("FETCH_TODOIST", self.config);
+    },
+    startUpdating: function() {
+        let self = this;
+        this.refreshTodos();
+        if( this.updater === null ) {
+            this.updater = setInterval(self.refreshTodos, self.config.updateInterval);
+        }
+    },
+    stopUpdating: function() {
+        clearInterval(this.updater);
+        this.updater = null;
+    },
+    refreshTodos: function() {
+        if ( this._userPresence === true && this._hidden === false ) {
+            if ( this.lastUpdate === null || moment().diff(this.lastUpdate) > this.updateInterval ) {
+                this.sendSocketNotification("FETCH_TODOIST", this.config);
             }
-        }, self.config.updateInterval);
+        }
     },
     // called by core when module is not displayed
     suspend: function() {
@@ -82,20 +94,31 @@ Module.register("MMM-Todoist-Filters", {
         if (self.config.debug) {
             Log.log(`[${this.name}] SUSPEND: ModuleHidden = ${ModuleHidden}`);
         }
+        this.stopUpdating();
     },
     // called by core when module is displayed
     resume: function() {
+        let self = this;
         this._hidden = false;
         if (self.config.debug) {
             Log.log(`[${this.name}] RESUME: ModuleHidden = ${ModuleHidden}`);
         }
+        if( this._userPresence ) {
+            this.startUpdating();
+        }
+
     },
     notificationReceived: function(notification, payload) {
         if (this.config.debug) {
             Log.log(`[${this.name}] Notification Received: ${notification} : payload = ${payload})`);
         }
-        if (notification === "USER_PRESENCE") { // notification sent by module MMM-PIR-Sensor. See its doc
+        if ( notification === "USER_PRESENCE" ) { // notification sent by module MMM-PIR-Sensor. See its doc
             this._userPresence = payload;
+            if( this._userPresence ) {
+                this.startUpdating();
+            } else {
+                this.stopUpdating();
+            }
         }
     },
 
@@ -144,11 +167,9 @@ Module.register("MMM-Todoist-Filters", {
     },
     socketNotificationReceived: function(notification, payload) {
         if (notification === "TASKS") {
+            this.lastUpdate = moment();
             this.filterTodoistData(payload);
-
-            if (this.config.displayLastUpdate) {
-                this.lastUpdate = Date.now() / 1000; //save the timestamp of the last update to be able to display it
-                Log.log(`[${this.name}] Todoist tasks updated at ${moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat)}`);
+            Log.log(`[${this.name}] Todoist tasks updated at ${this.lastUpdate.format(this.displayUpdateFormat)}`);
             }
             this.loaded = true;
             this.updateDom(1000);
@@ -161,6 +182,7 @@ Module.register("MMM-Todoist-Filters", {
     filterTodoistData: function(apiTasks) {
 
         let self = this;
+        this.filteredItems = [];
         this.tasks = {
             "items": apiTasks.items,
             "projects": apiTasks.projects,
@@ -582,7 +604,7 @@ Module.register("MMM-Todoist-Filters", {
         if (self.config.displayLastUpdate) {
 			let updateinfo = document.createElement("div");
 			updateinfo.className = "xsmall light align-left";
-			updateinfo.innerHTML = "Updated: " + moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat);
+			updateinfo.innerHTML = "Updated: " + self.format(self.config.displayLastUpdateFormat);
 			wrapper.appendChild(updateinfo);
 		}
         return wrapper;
