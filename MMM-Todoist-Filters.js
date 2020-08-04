@@ -8,7 +8,7 @@
  * MIT Licensed.
  */
 
-
+const moment = require("moment");
 Module.register("MMM-Todoist-Filters", {
     defaults: {
         updateInterval: 10 * 60 * 1000, // in ms (default every 10 minutes)
@@ -92,7 +92,7 @@ Module.register("MMM-Todoist-Filters", {
     suspend: function() {
         this._hidden = true;
         if (self.config.debug) {
-            Log.log(`[${this.name}] SUSPEND: ModuleHidden = ${ModuleHidden}`);
+            Log.log(`[${this.name}] SUSPEND: ModuleHidden = ${this._hidden}`);
         }
         this.stopUpdating();
     },
@@ -101,7 +101,7 @@ Module.register("MMM-Todoist-Filters", {
         let self = this;
         this._hidden = false;
         if (self.config.debug) {
-            Log.log(`[${this.name}] RESUME: ModuleHidden = ${ModuleHidden}`);
+            Log.log(`[${this.name}] RESUME: ModuleHidden = ${this._hidden}`);
         }
         if( this._userPresence ) {
             this.startUpdating();
@@ -177,8 +177,7 @@ Module.register("MMM-Todoist-Filters", {
             Log.error(`[${this.name}] API request error: ${payload.error}`);
         }
     },
-    // create array to put filter/item objects into after filtering and sorting
-    filteredItems: [],
+
     filterTodoistData: function(apiTasks) {
 
         let self = this;
@@ -190,55 +189,72 @@ Module.register("MMM-Todoist-Filters", {
             "collaborators": apiTasks.collaborators
         };
         let filters = self.config.filters;
+
         // get filter criteria in format matching API
         for ( let f of self.config.filters ) {
             if ( f.criteria === undefined ) {
                 f.criteria = [];
             }
             f.items = [];
+            self.tdfLog("-------- FILTER: " + f.name + " --------");
             f.criteria.forEach(c => {
+                self.tdfLog("Criteria group")
                 // convert projects in criteria to array of matching project IDs
                 if (c.projects) {
+                    self.tdfLog(`Has project criteria, c.excludeProjects = ${c.excludeProjects}`);
                     c.filterProjects = [];
                     if (c.excludeProjects) {
                         for (let projectObject of apiTasks.projects) {
                             if (c.projects.includes(projectObject.name)) {
+                                self.tdfLog(`c.projects includes ${projectObject.name}, not added to criteria`);
                                 break;
                             }
+                            self.tdfLog(`c.projects does not include ${projectObject.name}, added to criteria`);
                             c.filterProjects.push(projectObject.id);
                         }
                     } else {
                         for (let projectName of c.projects) {
                             for (let projectObject of apiTasks.projects) {
                                 if (projectObject.name === projectName) {
+                                    self.tdfLog(`found match for ${projectName} in API response, added to criteria`);
                                     c.filterProjects.push(projectObject.id);
                                     break;
                                 }
                             }
                         }
                     }
+                    self.tdfLog(`Will look for items in project(s): ${c.filterProjects.join(", ")}`);
+                } else {
+                    self.tdfLog(`No project criteria`);
                 }
 
                 // convert labels in criteria to array of matching label IDs
                 if (c.labels) {
+                    self.tdfLog(`Has label criteria, c.excludeLabels = ${c.excludeLabels}`);
                     c.filterLabels = [];
                     if (c.excludeLabels) {
                         for (let labelObject of apiTasks.labels) {
                             if (c.labels.includes(labelObject.name)) {
+                                self.tdfLog(`c.labels includes ${labelObject.name}, not added to criteria`);
                                 break;
                             }
+                            self.tdfLog(`c.labels does not include ${labelObject.name}, added to criteria`);
                             c.filterLabels.push(labelObject.id);
                         }
                     } else {
                         for (let labelName of c.labels) {
                             for (let labelObject of apiTasks.labels) {
                                 if (labelObject.name === labelName) {
+                                    self.tdfLog(`found match for ${labelName} in API response, added to criteria`);
                                     c.filterLabels.push(labelObject.id);
                                     break;
                                 }
                             }
                         }
                     }
+                    self.tdfLog(`Will look for items matching label(s): ${c.filterLabels.join(", ")}`)
+                } else {
+                    self.tdfLog(`No label criteria`);
                 }
 
                 // convert priorities in criteria to match API values
@@ -251,16 +267,23 @@ Module.register("MMM-Todoist-Filters", {
                 }
             });
         };
+        self.tdfLog(`-------- CHECKING ITEMS --------`);
         // for each item, check against each filter's criteria
         for (let item of apiTasks.items) {
+            self.tdfLog(`ITEM: ${item.content}`);
             let added = false;
             for (let f of self.config.filters) {
+                self.tdfLog(`checking filter: ${f.name}`);
                 for (let c of f.criteria) {
                     // skip items not matching priority criteria
                     if (c.filterProjects) {
                         if (!c.filterProjects.includes(item.project_id)) {
+                            self.tdfLog(`Project: no match`)
                             continue;
                         }
+                        self.tdfLog(`Project: match, continue`);
+                    } else {
+                        self.tdfLog(`Project: N/A`);
                     }
 
                     // skip items not containing labels in criteria
@@ -274,25 +297,35 @@ Module.register("MMM-Todoist-Filters", {
                                 }
                             }
                             if (!labelMatches) {
+                                self.tdfLog(`Labels: no match`);
                                 continue;
                             }
+                            self.tdfLog(`Labels: match, continue`);
                         }
+                    } else {
+                        self.tdfLog(`Labels: N/A`);
                     }
 
                     // skip items not matching priority criteria
                     if (c.filterPriority) {
                         if (!c.filterPriority.includes(item.priority)) {
+                            self.tdfLog(`Priority: no match`);
                             continue;
                         }
+                        self.tdfLog(`Priority: match, continue`);
+                    } else {
+                        self.tdfLog(`Priority: N/A`);
                     }
 
                     // skip items with a due date if we only want no-date items
                     if (c.noDate === "only" && item.due !== null) {
+                        self.tdfLog("has date, only want noDate");
                         continue;
                     }
 
                     // skip no-date items if we want to exclude
                     if (c.noDate === "exclude" && item.due === null) {
+                        self.tdfLog("has no date, only want dated items");
                         continue;
                     }
 
@@ -305,9 +338,12 @@ Module.register("MMM-Todoist-Filters", {
                         let diffDays = Math.floor((dueDate - today) / oneDay);
 
                         if (diffDays > c.withinDays) {
+                            self.tdfLog("due date is further away than withinDays criteria")
                             continue;
                         }
+                        self.tdfLog("Date: match, continue")
                     }
+                    self.tdfLog("All criteria met, added to this group")
                     f.items.push(item);
                     added = true;
                     break;
@@ -367,6 +403,11 @@ Module.register("MMM-Todoist-Filters", {
                 config: f.config
             });
         });
+    },
+    tdfLog: function(x){
+        if(this.config.debug) {
+            Log.log(`[MMM-Todoist-Filters] ${x}`)
+        }
     },
     parseDueDate: function(date) {
         let [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
