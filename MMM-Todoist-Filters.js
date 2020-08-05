@@ -652,7 +652,7 @@ Module.register("MMM-Todoist-Filters", {
         if (self.config.displayLastUpdate) {
 			let updateinfo = document.createElement("div");
 			updateinfo.className = "xsmall light align-left";
-			updateinfo.innerHTML = "Updated: " + self.format(self.config.displayLastUpdateFormat);
+			updateinfo.innerHTML = "Updated: " + moment.unix(self.lastUpdate).format(self.config.displayLastUpdateFormat);
 			wrapper.appendChild(updateinfo);
 		}
         return wrapper;
