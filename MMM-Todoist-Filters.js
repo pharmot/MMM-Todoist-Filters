@@ -60,6 +60,7 @@ Module.register("MMM-Todoist-Filters", {
         this.title = "Loading...";
         this.loaded = false;
         this.lastUpdate = null;
+        this.lastUpdateRequest = null;
         this.updater = null;
 
         if (this.config.accessToken === "") {
@@ -82,7 +83,8 @@ Module.register("MMM-Todoist-Filters", {
     },
     refreshTodos: function() {
         if ( this._userPresence === true && this._hidden === false ) {
-            if ( this.lastUpdate === null || moment().diff(this.lastUpdate) > this.updateInterval ) {
+            if ( this.lastUpdateRequest === null || moment().diff(this.lastUpdateRequest) > this.config.updateInterval ) {
+                this.lastUpdateRequest = moment();
                 this.sendSocketNotification("FETCH_TODOIST", this.config);
             }
         }
@@ -90,27 +92,17 @@ Module.register("MMM-Todoist-Filters", {
     // called by core when module is not displayed
     suspend: function() {
         this._hidden = true;
-        if (self.config.debug) {
-            Log.log(`[${this.name}] SUSPEND: ModuleHidden = ${this._hidden}`);
-        }
+        this.tdfLog(`[${this.name}] SUSPEND: ModuleHidden = ${this._hidden}`);
         this.stopUpdating();
     },
     // called by core when module is displayed
     resume: function() {
         let self = this;
         this._hidden = false;
-        if (self.config.debug) {
-            Log.log(`[${this.name}] RESUME: ModuleHidden = ${this._hidden}`);
-        }
-        if( this._userPresence ) {
-            this.startUpdating();
-        }
-
+        this.tdfLog(`[MMM-Todoist-Filters] RESUME: ModuleHidden = ${this._hidden}`)
+        this.startUpdating();
     },
     notificationReceived: function(notification, payload) {
-        if (this.config.debug) {
-            Log.log(`[${this.name}] Notification Received: ${notification} : payload = ${payload})`);
-        }
         if ( notification === "USER_PRESENCE" ) { // notification sent by module MMM-PIR-Sensor. See its doc
             this._userPresence = payload;
             if( this._userPresence ) {
@@ -167,9 +159,9 @@ Module.register("MMM-Todoist-Filters", {
     socketNotificationReceived: function(notification, payload) {
         if (notification === "TASKS") {
             this.lastUpdate = moment();
+            this.sendNotification("TODOIST_TASKS_UPDATED");
             this.filterTodoistData(payload);
             Log.log(`[${this.name}] Todoist tasks updated at ${this.lastUpdate.format(this.displayUpdateFormat)}`);
-
             this.loaded = true;
             this.updateDom(1000);
         } else if (notification === "FETCH_ERROR") {
