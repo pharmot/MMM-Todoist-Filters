@@ -17,7 +17,7 @@ Module.register("MMM-Todoist-Filters", {
         displayLastUpdateFormat: "M/D HH:mm", //format to display the last update. See Moment.js documentation for all display possibilities
         maxTitleLength: 40, //10 to 50. Value to cut the line if wrapEvents: true
         wrapEvents: false, // wrap events to multiple lines breaking at maxTitleLength
-        displaySubtasks: true, // set to false to exclude subtasks // TODO: make this functional
+        displaySubtasks: true, // set to false to exclude subtasks
         displayAvatar: false,
         hideLabelNames: [],
         apiVersion: "v8",
