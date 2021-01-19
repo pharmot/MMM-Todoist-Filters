@@ -1,3 +1,6 @@
+.jshintrc
+.stylelintrc
+
 # Logs
 logs
 *.log
@@ -102,13 +105,3 @@ dist
 
 # TernJS port file
 .tern-port
-
-# JS Hint Configuration
-test.html
-MM-core-main.css
-MMM-Todoist-Filters.css
-dev-test.js
-add-to-config.js
-
-README-original.md
-readme-table.html

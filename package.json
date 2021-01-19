@@ -1,6 +1,6 @@
 {
   "name": "mmm-todoist-filters",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Todoist module for the Magic Mirror including support for filtered groups.",
   "repository": {
     "type": "git",
