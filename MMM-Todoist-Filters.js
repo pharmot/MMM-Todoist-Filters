@@ -92,7 +92,7 @@ Module.register("MMM-Todoist-Filters", {
     // called by core when module is displayed
     resume: function() {
         this._hidden = false;
-        this.tdfLog(`[MMM-Todoist-Filters] RESUME: ModuleHidden = ${this._hidden}`);
+        this.tdfLog(`[${this.name}] RESUME: ModuleHidden = ${this._hidden}`);
         this.startUpdating();
     },
     notificationReceived: function(notification, payload) {
@@ -501,7 +501,7 @@ Module.register("MMM-Todoist-Filters", {
         if (typeof colIndex !== "undefined" && this.tasks.collaborators[colIndex].image_id != null) {
             avatarImg.src = `https://dcff1xvirvpfp.cloudfront.net/${  this.tasks.collaborators[colIndex].image_id  }_big.jpg`;
         } else {
-            avatarImg.src = "/modules/MMM-Todoist/1x1px.png";
+            avatarImg.src = "/modules/MMM-Todoist-Filters/1x1px.png";
         }
 
         const cell = this.createCell("", "tdf-avatar-wrapper");
