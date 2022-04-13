@@ -1,5 +1,3 @@
-/* global Module */
-
 /* Magic Mirror
  * Module: MMM-Todoist-Filters
  *
@@ -23,7 +21,7 @@ Module.register("MMM-Todoist-Filters", {
         apiVersion: "v8",
         apiBase: "https://api.todoist.com/sync", //Changed from https://todoist.com/API
         todoistEndpoint: "sync",
-        todoistResourceType: '["items", "projects", "collaborators", "user", "labels"]',
+        todoistResourceType: "[\"items\", \"projects\", \"collaborators\", \"user\", \"labels\"]",
         debug: false,
         filters: [{
             name: "Todoist",
@@ -40,7 +38,7 @@ Module.register("MMM-Todoist-Filters", {
                 excludeProjects: true,
                 withinDays: 7
             }]
-        }],
+        }]
     },
     getStyles: function() {
         return ["MMM-Todoist-Filters.min.css"];
@@ -54,7 +52,6 @@ Module.register("MMM-Todoist-Filters", {
     },
     start: function() {
         Log.info(`[${this.name}] Starting module`);
-        let self = this;
         this._hidden = false;
         this._userPresence = true;
         this.title = "Loading...";
@@ -71,9 +68,9 @@ Module.register("MMM-Todoist-Filters", {
 
     },
     startUpdating: function() {
-        let self = this;
+        const self = this;
         this.refreshTodos();
-        if( this.updater === null ) {
+        if ( this.updater === null ) {
             this.updater = setInterval(self.refreshTodos, self.config.updateInterval);
         }
     },
@@ -97,15 +94,14 @@ Module.register("MMM-Todoist-Filters", {
     },
     // called by core when module is displayed
     resume: function() {
-        let self = this;
         this._hidden = false;
-        this.tdfLog(`[MMM-Todoist-Filters] RESUME: ModuleHidden = ${this._hidden}`)
+        this.tdfLog(`[MMM-Todoist-Filters] RESUME: ModuleHidden = ${this._hidden}`);
         this.startUpdating();
     },
     notificationReceived: function(notification, payload) {
         if ( notification === "USER_PRESENCE" ) { // notification sent by module MMM-PIR-Sensor. See its doc
             this._userPresence = payload;
-            if( this._userPresence ) {
+            if ( this._userPresence ) {
                 this.startUpdating();
             } else {
                 this.stopUpdating();
@@ -131,17 +127,17 @@ Module.register("MMM-Todoist-Filters", {
         if (wrapEvents === true) {
             let temp = "";
             let currentLine = "";
-            let words = string.split(" ");
+            const words = string.split(" ");
 
             for (let i = 0; i < words.length; i++) {
-                let word = words[i];
+                const word = words[i];
                 if (currentLine.length + word.length < (typeof maxLength === "number" ? maxLength : 25) - 1) { // max - 1 to account for a space
-                    currentLine += (word + " ");
+                    currentLine += `${word  } `;
                 } else {
                     if (currentLine.length > 0) {
-                        temp += (currentLine + "<br>" + word + " ");
+                        temp += `${currentLine  }<br>${  word  } `;
                     } else {
-                        temp += (word + "<br>");
+                        temp += `${word  }<br>`;
                     }
                     currentLine = "";
                 }
@@ -150,7 +146,7 @@ Module.register("MMM-Todoist-Filters", {
             return (temp + currentLine).trim();
         } else {
             if (maxLength && typeof maxLength === "number" && string.length > maxLength) {
-                return string.trim().slice(0, maxLength) + "&hellip;";
+                return `${string.trim().slice(0, maxLength)  }&hellip;`;
             } else {
                 return string.trim();
             }
@@ -171,7 +167,7 @@ Module.register("MMM-Todoist-Filters", {
 
     filterTodoistData: function(apiTasks) {
 
-        let self = this;
+        const self = this;
         this.filteredItems = [];
         this.tasks = {
             "items": apiTasks.items,
@@ -179,23 +175,22 @@ Module.register("MMM-Todoist-Filters", {
             "labels": apiTasks.labels,
             "collaborators": apiTasks.collaborators
         };
-        let filters = self.config.filters;
         self.tdfLog("------------------FILTER TRANSFORM------------------");
         // get filter criteria in format matching API
-        for ( let f of self.config.filters ) {
+        for ( const f of self.config.filters ) {
             if ( f.criteria === undefined ) {
                 f.criteria = [];
             }
             f.items = [];
-            self.tdfLog("FILTER: " + f.name);
+            self.tdfLog(`FILTER: ${  f.name}`);
             f.criteria.forEach(c => {
-                self.tdfLog("--Criteria group")
+                self.tdfLog("--Criteria group");
                 // convert projects in criteria to array of matching project IDs
                 if (c.projects) {
                     self.tdfLog(`----Has project criteria, c.excludeProjects = ${c.excludeProjects}`);
                     c.filterProjects = [];
                     if (c.excludeProjects) {
-                        for (let projectObject of apiTasks.projects) {
+                        for (const projectObject of apiTasks.projects) {
                             if (c.projects.includes(projectObject.name)) {
                                 self.tdfLog(`------c.projects includes ${projectObject.name}, not added to criteria`);
                                 break;
@@ -204,8 +199,8 @@ Module.register("MMM-Todoist-Filters", {
                             c.filterProjects.push(projectObject.id);
                         }
                     } else {
-                        for (let projectName of c.projects) {
-                            for (let projectObject of apiTasks.projects) {
+                        for (const projectName of c.projects) {
+                            for (const projectObject of apiTasks.projects) {
                                 if (projectObject.name === projectName) {
                                     self.tdfLog(`------found match for ${projectName} in API response, added to criteria`);
                                     c.filterProjects.push(projectObject.id);
@@ -224,7 +219,7 @@ Module.register("MMM-Todoist-Filters", {
                     self.tdfLog(`----Has label criteria, c.excludeLabels = ${c.excludeLabels}`);
                     c.filterLabels = [];
                     if (c.excludeLabels) {
-                        for (let labelObject of apiTasks.labels) {
+                        for (const labelObject of apiTasks.labels) {
                             if (c.labels.includes(labelObject.name)) {
                                 self.tdfLog(`------c.labels includes ${labelObject.name}, not added to criteria`);
                                 break;
@@ -233,8 +228,8 @@ Module.register("MMM-Todoist-Filters", {
                             c.filterLabels.push(labelObject.id);
                         }
                     } else {
-                        for (let labelName of c.labels) {
-                            for (let labelObject of apiTasks.labels) {
+                        for (const labelName of c.labels) {
+                            for (const labelObject of apiTasks.labels) {
                                 if (labelObject.name === labelName) {
                                     self.tdfLog(`------found match for ${labelName} in API response, added to criteria`);
                                     c.filterLabels.push(labelObject.id);
@@ -243,7 +238,7 @@ Module.register("MMM-Todoist-Filters", {
                             }
                         }
                     }
-                    self.tdfLog(`----Will look for items matching label(s): ${c.filterLabels.join(", ")}`)
+                    self.tdfLog(`----Will look for items matching label(s): ${c.filterLabels.join(", ")}`);
                 } else {
                     self.tdfLog(`----No label criteria`);
                 }
@@ -252,24 +247,24 @@ Module.register("MMM-Todoist-Filters", {
                 // (in API, p1 = 4, p2 = 3, p3 = 2, p4(none) = 1
                 if (c.priority) {
                     c.filterPriority = [];
-                    for (let p of c.priority) {
+                    for (const p of c.priority) {
                         c.filterPriority.push(5 - p);
                     }
                 }
             });
-        };
+        }
         self.tdfLog("--------------------ITEM FILTER--------------------");
         // for each item, check against each filter's criteria
-        for (let item of apiTasks.items) {
+        for (const item of apiTasks.items) {
             self.tdfLog(`ITEM: ${item.content}`);
             let added = false;
-            for (let f of self.config.filters) {
+            for (const f of self.config.filters) {
                 self.tdfLog(`--checking filter: ${f.name}`);
-                for (let c of f.criteria) {
+                for (const c of f.criteria) {
                     // skip items not matching priority criteria
                     if (c.filterProjects) {
                         if (!c.filterProjects.includes(item.project_id)) {
-                            self.tdfLog(`----Project ${item.project_id}: no match`)
+                            self.tdfLog(`----Project ${item.project_id}: no match`);
                             continue;
                         }
                         self.tdfLog(`----Project ${item.project_id}: match, continue`);
@@ -281,8 +276,8 @@ Module.register("MMM-Todoist-Filters", {
                     if (c.filterLabels) {
                         let labelMatches = false;
                         if (item.labels.length > 0) {
-                            self.tdfLog(`----Labels: ${item.labels.join(", ")}`)
-                            for (let itemLabel of item.labels) {
+                            self.tdfLog(`----Labels: ${item.labels.join(", ")}`);
+                            for (const itemLabel of item.labels) {
                                 if (c.filterLabels.includes(itemLabel)) {
                                     labelMatches = true;
                                     break;
@@ -294,11 +289,11 @@ Module.register("MMM-Todoist-Filters", {
                             }
                             self.tdfLog(`------match, continue`);
                         } else {
-                            if(!c.excludeLabels) {
+                            if (!c.excludeLabels) {
                                 self.tdfLog(`----Labels: has none, criteria requires, no match`);
                                 continue;
                             } else {
-                                self.tdfLog(`----Labels: has none, criteria doesn't require, continue`)
+                                self.tdfLog(`----Labels: has none, criteria doesn't require, continue`);
                             }
                         }
                     } else {
@@ -329,20 +324,20 @@ Module.register("MMM-Todoist-Filters", {
                     }
 
                     if (c.withinDays > 0 && item.due !== null) { //we need to check item due date
-                        let oneDay = 24 * 60 * 60 * 1000;
-                        let dueDateTime = self.parseDueDate(item.due.date);
-                        let dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
-                        let now = new Date();
-                        let today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                        let diffDays = Math.floor((dueDate - today) / oneDay);
+                        const oneDay = 24 * 60 * 60 * 1000;
+                        const dueDateTime = self.parseDueDate(item.due.date);
+                        const dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
+                        const now = new Date();
+                        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        const diffDays = Math.floor((dueDate - today) / oneDay);
 
                         if (diffDays > c.withinDays) {
-                            self.tdfLog("----Date: beyond withinDays, no match")
+                            self.tdfLog("----Date: beyond withinDays, no match");
                             continue;
                         }
-                        self.tdfLog("----Date: match, continue")
+                        self.tdfLog("----Date: match, continue");
                     }
-                    self.tdfLog("----All criteria met, added to this group")
+                    self.tdfLog("----All criteria met, added to this group");
                     f.items.push(item);
                     added = true;
                     break;
@@ -378,18 +373,18 @@ Module.register("MMM-Todoist-Filters", {
 
             // Sort items
             switch (f.config.sortType) {
-                case "todoist":
-                    f.items = self.sortByTodoist(f.items);
-                    break;
-                case "dueDateAsc":
-                    f.items = self.sortByDueDateAsc(f.items);
-                    break;
-                case "dueDateDesc":
-                    f.items = self.sortByDueDateDesc(f.items);
-                    break;
-                default:
-                    f.items = self.sortByTodoist(f.items);
-                    break;
+            case "todoist":
+                f.items = self.sortByTodoist(f.items);
+                break;
+            case "dueDateAsc":
+                f.items = self.sortByDueDateAsc(f.items);
+                break;
+            case "dueDateDesc":
+                f.items = self.sortByDueDateDesc(f.items);
+                break;
+            default:
+                f.items = self.sortByTodoist(f.items);
+                break;
             }
 
             // Slice by max entries
@@ -403,13 +398,13 @@ Module.register("MMM-Todoist-Filters", {
             });
         });
     },
-    tdfLog: function(x){
-        if(this.config.debug) {
+    tdfLog: function(x) {
+        if (this.config.debug) {
             Log.log(x);
         }
     },
     parseDueDate: function(date) {
-        let [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
+        const [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
 
         // If the task's due date has a timezone set (as opposed to the default floating timezone), it's given in UTC time.
         if (date[date.length - 1] === "Z") {
@@ -420,7 +415,7 @@ Module.register("MMM-Todoist-Filters", {
     },
     sortByTodoist: function(itemstoSort) {
         itemstoSort.sort(function(a, b) {
-            let itemA = a.child_order,
+            const itemA = a.child_order,
                 itemB = b.child_order;
             return itemA - itemB;
         });
@@ -439,7 +434,7 @@ Module.register("MMM-Todoist-Filters", {
         return itemstoSort;
     },
     createCell: function(className, innerHTML) {
-        let cell = document.createElement("div");
+        const cell = document.createElement("div");
         cell.className = className;
         cell.innerHTML = innerHTML;
         return cell;
@@ -447,42 +442,42 @@ Module.register("MMM-Todoist-Filters", {
     addDueDateCell: function(item) {
         let className = "xsmall bright tdf-due-date ";
         let innerHTML = "";
-        let oneDay = 24 * 60 * 60 * 1000;
-        let dueDateTime = this.parseDueDate(item.due.date);
-        let dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
-        let now = new Date();
-        let today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        let diffDays = Math.floor((dueDate - today) / (oneDay));
-        let diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
+        const oneDay = 24 * 60 * 60 * 1000;
+        const dueDateTime = this.parseDueDate(item.due.date);
+        const dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const diffDays = Math.floor((dueDate - today) / oneDay);
+        const diffMonths = dueDate.getFullYear() * 12 + dueDate.getMonth() - (now.getFullYear() * 12 + now.getMonth());
 
         if (diffDays < -1) {
-            innerHTML = dueDate.toLocaleDateString(config.language, {
+            innerHTML = `${dueDate.toLocaleDateString(this.config.language, {
                 "month": "short"
-            }) + " " + dueDate.getDate();
+            })  } ${  dueDate.getDate()}`;
             className += "tdf-overdue";
         } else if (diffDays === -1) {
             innerHTML = this.translate("YESTERDAY");
             className += "tdf-overdue";
         } else if (diffDays === 0) {
             innerHTML = this.translate("TODAY");
-            className += (item.all_day || dueDateTime >= now) ? "tdf-today" : "tdf-overdue";
+            className += item.all_day || dueDateTime >= now ? "tdf-today" : "tdf-overdue";
         } else if (diffDays === 1) {
             innerHTML = this.translate("TOMORROW");
             className += "tdf-tomorrow";
         } else if (diffDays < 7) {
-            innerHTML = dueDate.toLocaleDateString(config.language, {
+            innerHTML = dueDate.toLocaleDateString(this.config.language, {
                 "weekday": "short"
             });
-        } else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
-            innerHTML = dueDate.toLocaleDateString(config.language, {
+        } else if (diffMonths < 7 || dueDate.getFullYear() === now.getFullYear()) {
+            innerHTML = `${dueDate.toLocaleDateString(this.config.language, {
                 "month": "short"
-            }) + " " + dueDate.getDate();
+            })  } ${  dueDate.getDate()}`;
         } else if (item.due.date === "2100-12-31") {
             innerHTML = "";
         } else {
-            innerHTML = dueDate.toLocaleDateString(config.language, {
+            innerHTML = `${dueDate.toLocaleDateString(this.config.language, {
                 "month": "short"
-            }) + " " + dueDate.getDate() + " " + dueDate.getFullYear();
+            })  } ${  dueDate.getDate()  } ${  dueDate.getFullYear()}`;
         }
 
         if (innerHTML !== "" && !item.all_day) {
@@ -492,38 +487,38 @@ Module.register("MMM-Todoist-Filters", {
         return this.createCell(className, innerHTML);
     },
     formatTime: function(d) {
-        let h = d.getHours();
-        let n = d.getMinutes();
-        let m = (n < 10 ? "0" : "") + n;
-        if (config.timeFormat == 12) {
-            return " " + (h % 12 || 12) + ":" + m + (h < 12 ? " AM" : " PM");
+        const h = d.getHours();
+        const n = d.getMinutes();
+        const m = (n < 10 ? "0" : "") + n;
+        if (this.config.timeFormat === 12) {
+            return ` ${  h % 12 || 12  }:${  m  }${h < 12 ? " AM" : " PM"}`;
         } else {
-            return " " + h + ":" + m;
+            return ` ${  h  }:${  m}`;
         }
     },
     addAssigneeAvatarCell: function(item, collaboratorsMap) {
-        let avatarImg = document.createElement("img");
+        const avatarImg = document.createElement("img");
         avatarImg.className = "tdf-avatar-img";
 
-        let colIndex = collaboratorsMap.get(item.responsible_uid);
+        const colIndex = collaboratorsMap.get(item.responsible_uid);
         if (typeof colIndex !== "undefined" && this.tasks.collaborators[colIndex].image_id != null) {
-            avatarImg.src = "https://dcff1xvirvpfp.cloudfront.net/" + this.tasks.collaborators[colIndex].image_id + "_big.jpg";
+            avatarImg.src = `https://dcff1xvirvpfp.cloudfront.net/${  this.tasks.collaborators[colIndex].image_id  }_big.jpg`;
         } else {
             avatarImg.src = "/modules/MMM-Todoist/1x1px.png";
         }
 
-        let cell = this.createCell("", "tdf-avatar-wrapper");
+        const cell = this.createCell("", "tdf-avatar-wrapper");
         cell.appendChild(avatarImg);
 
         return cell;
     },
     getDom: function() {
-        let self = this;
+        const self = this;
         if (self.config.hideWhenEmpty && self.tasks.items.length === 0) {
             return null;
         }
 
-        let wrapper = document.createElement("div");
+        const wrapper = document.createElement("div");
 
         //display "loading..." if not loaded
         if (!self.loaded) {
@@ -539,9 +534,9 @@ Module.register("MMM-Todoist-Filters", {
         }
 
         // create mapping from user id to collaborator index
-        let collaboratorsMap = new Map();
+        const collaboratorsMap = new Map();
 
-        for (let i=0; i < this.tasks.collaborators.length; i++) {
+        for (let i = 0; i < this.tasks.collaborators.length; i++) {
             collaboratorsMap.set(this.tasks.collaborators[i].id, i);
         }
 
@@ -549,7 +544,7 @@ Module.register("MMM-Todoist-Filters", {
         // those div's won't be created if not needed
         let anyProjectNames = false,
             anyProjectColors = false;
-        for (let f of self.filteredItems) {
+        for (const f of self.filteredItems) {
             if (f.config.showProjectName) {
                 anyProjectNames = true;
             }
@@ -562,26 +557,26 @@ Module.register("MMM-Todoist-Filters", {
         }
 
         // add class to define css grid according to what is shown
-        let gridColumns = ( anyProjectColors ? "x" : "o" ) +
+        const gridColumns = ( anyProjectColors ? "x" : "o" ) +
             ( anyProjectNames ? "x" : "o" ) +
             ( self.config.displayAvatar ? "x" : "o" );
 
-        let grid = document.createElement("div");
-        grid.className = "tdf-grid-container tdf-grid-" + gridColumns;
+        const grid = document.createElement("div");
+        grid.className = `tdf-grid-container tdf-grid-${  gridColumns}`;
         self.filteredItems.forEach(f => {
             if (f.items.length === 0 && !f.config.showWhenEmpty) {
                 return;
             }
 
             if (f.name) {
-                let filterHeading = document.createElement("div");
+                const filterHeading = document.createElement("div");
                 filterHeading.className = "tdf-heading";
                 filterHeading.innerHTML = f.name;
                 grid.appendChild(filterHeading);
             }
 
             if ( f.items.length === 0 ) {
-                let emptyDiv = document.createElement("div");
+                const emptyDiv = document.createElement("div");
                 emptyDiv.className = "tdf-empty dimmed xsmall light";
                 emptyDiv.innerHTML = this.translate("NOTASKS");
                 grid.appendChild(emptyDiv);
@@ -591,25 +586,25 @@ Module.register("MMM-Todoist-Filters", {
                 f.items.forEach(item => {
 
                     // add priority div
-                    let priorityClassName = item.priority === 4 ? "tdf-p1" :
+                    const priorityClassName = item.priority === 4 ? "tdf-p1" :
                         item.priority === 3 ? "tdf-p2" :
-                        item.priority === 2 ? "tdf-p3" :
-                        "";
+                            item.priority === 2 ? "tdf-p3" :
+                                "";
 
-                    grid.appendChild(this.createCell("tdf-priority " + priorityClassName, "&nbsp;"));
+                    grid.appendChild(this.createCell(`tdf-priority ${  priorityClassName}`, "&nbsp;"));
 
                     // add title div
                     let taskTitleInner = this.shorten(item.content, this.config.maxTitleLength, this.config.wrapEvents);
                     if ( f.config.showLabels && item.labels.length > 0 ) {
                         item.labels.forEach(itemlabel => {
-                            let labelObject = self.tasks.labels.find(lbl => lbl.id === itemlabel);
-                            if ( !self.config.hideLabelNames.includes(labelObject.name) ){
+                            const labelObject = self.tasks.labels.find(lbl => lbl.id === itemlabel);
+                            if ( !self.config.hideLabelNames.includes(labelObject.name) ) {
                                 taskTitleInner += `<span class='tdf-label tdf-color-${labelObject.color}'>${labelObject.name}</span>`;
                             }
                         });
                     }
 
-                    let titleDiv = document.createElement("div");
+                    const titleDiv = document.createElement("div");
                     titleDiv.innerHTML = taskTitleInner;
                     titleDiv.className = "tdf-title bright";
                     grid.appendChild(titleDiv);
@@ -619,10 +614,10 @@ Module.register("MMM-Todoist-Filters", {
 
                     // add project divs
                     if (anyProjectNames || anyProjectColors) {
-                        let project = self.tasks.projects.find(p => p.id === item.project_id);
+                        const project = self.tasks.projects.find(p => p.id === item.project_id);
                         if (anyProjectColors) {
                             if (f.config.showProjectColor) {
-                                grid.appendChild(this.createCell("tdf-proj-color tdf-color-" + project.color, "&nbsp;"));
+                                grid.appendChild(this.createCell(`tdf-proj-color tdf-color-${  project.color}`, "&nbsp;"));
                             } else {
                                 grid.appendChild(this.createCell("tdf-proj-color tdf-color-none", "&nbsp;"));
                             }
@@ -642,11 +637,11 @@ Module.register("MMM-Todoist-Filters", {
         wrapper.appendChild(grid);
         // display the update time at the end, if defined so by the user config
         if (self.config.displayLastUpdate) {
-			let updateinfo = document.createElement("div");
-			updateinfo.className = "xsmall light align-left";
-			updateinfo.innerHTML = "Updated: " + self.lastUpdate.format(self.config.displayLastUpdateFormat);
-			wrapper.appendChild(updateinfo);
-		}
+            const updateinfo = document.createElement("div");
+            updateinfo.className = "xsmall light align-left";
+            updateinfo.innerHTML = `Updated: ${  self.lastUpdate.format(self.config.displayLastUpdateFormat)}`;
+            wrapper.appendChild(updateinfo);
+        }
         return wrapper;
     }
 });

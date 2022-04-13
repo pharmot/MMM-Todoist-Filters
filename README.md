@@ -249,3 +249,4 @@ This project is based on work done by Chris Brooker in the MMM-Todoist module. (
 ## To-Do
 
 - [ ] Add screenshots
+- [ ] Switch from moment to dayjs
