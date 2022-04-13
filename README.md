@@ -27,7 +27,6 @@ modules: [
         config: {
             accessToken: 'xxxxxxxxxxxxxxxxxxxxxx', // Replace with your own token
             updateInterval: 60000, // in ms
-
             displayLastUpdate: false,
             displayLastUpdateFormat: "M/D HH:mm",
             maxTitleLength: 40,
@@ -238,8 +237,6 @@ The following can be configured for each criteria set.  Multiple criteria sets c
 Installed via `npm install`
 
 - [moment](https://www.npmjs.com/package/moment)
-- [request](https://www.npmjs.com/package/request)
-
 
 
 ## Attribution

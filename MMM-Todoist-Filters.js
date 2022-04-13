@@ -18,10 +18,7 @@ Module.register("MMM-Todoist-Filters", {
         displaySubtasks: true, // set to false to exclude subtasks
         displayAvatar: false,
         hideLabelNames: [],
-        apiVersion: "v8",
-        apiBase: "https://api.todoist.com/sync", //Changed from https://todoist.com/API
-        todoistEndpoint: "sync",
-        todoistResourceType: "[\"items\", \"projects\", \"collaborators\", \"user\", \"labels\"]",
+        todoistResourceType: '["items", "projects", "collaborators", "user", "labels"]',
         debug: false,
         filters: [{
             name: "Todoist",

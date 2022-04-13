@@ -5,7 +5,7 @@
  */
 
 const NodeHelper = require("node_helper");
-const request = require("request");
+const https = require('https');
 
 module.exports = NodeHelper.create({
 	start: function() {
@@ -20,40 +20,41 @@ module.exports = NodeHelper.create({
 	},
 
 	fetchTodos : function() {
-		var self = this;
-		//request.debug = true;
-		var accessCode = self.config.accessToken;
-		request({
-			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
-			method: "POST",
-			headers: {
-				"content-type": "application/x-www-form-urlencoded",
-				"cache-control": "no-cache"
-			},
-			form: {
-				token: self.config.accessToken,
-				sync_token: "*",
-				resource_types: self.config.todoistResourceType
-			}
-		},
-		function(error, response, body) {
-			if (error) {
-				self.sendSocketNotification("FETCH_ERROR", {
-					error: error
-				});
-				return console.error("[MMM-Todoist-Filter] ERROR : " + error);
-			}
-			if(self.config.debug){
-				console.log(body);
-			}
-			if (response.statusCode === 200) {
-				var taskJson = JSON.parse(body);
-				taskJson.accessToken = accessCode;
-				self.sendSocketNotification("TASKS", taskJson);
-			} else {
-				console.log("[MMM-Todoist-Filter] API Request Status: " + response.statusCode);
-			}
+		const self = this;
+    const postData = JSON.stringify({
+      token: self.config.accessToken,
+      sync_token: "*",
+      resource_types: self.config.todoistResourceType
+    });
 
-		});
+    const options = {
+      hostname: "api.todoist.com",
+      port: 443,
+      path: "/sync/v8/sync/",
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Cache-Control": "no-cache",
+        "Authorization": `Bearer ${self.config.accessToken}`
+      }
+    }
+    const req = https.request(options, (res) => {
+      let data = '';
+      if ( res.statusCode !== 200 ) { console.log("[MMM-Todoist-Filter] API Request Status: " + res.statusCode) }
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+  				let taskJson = JSON.parse(data);
+  				self.sendSocketNotification("TASKS", taskJson);
+      });
+    }).on('error', (err) => {
+      self.sendSocketNotification("FETCH_ERROR", {
+        error: err
+      });
+      console.error("[MMM-Todoist-Filter] ERROR : " + err.message);
+    });
+    req.write(postData);
+    req.end();
 	}
 });
