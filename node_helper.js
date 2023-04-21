@@ -30,11 +30,11 @@ module.exports = NodeHelper.create({
     const options = {
       hostname: "api.todoist.com",
       port: 443,
-      path: "/sync/v8/sync",
+      path: "/sync/v9/sync",
       method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Cache-Control": "no-cache",
+        "content-type": "application/x-www-form-urlencoded",
+        "cache-control": "no-cache",
         "Authorization": `Bearer ${self.config.accessToken}`
       }
     }
