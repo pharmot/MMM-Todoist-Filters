@@ -1,4 +1,3 @@
-//compileCompressed
 $ff-condensed: "Roboto Condensed", arial, helvetica, sans-serif;
 $clr-p1: #ac0000; // #d1453b in Todoist
 $clr-p2: #f8dd70; // #eb8909 in Todoist
@@ -26,7 +25,27 @@ $todoist-colors: (
     46: #ff8d85,
     47: #808080,
     48: #b8b8b8,
-    49: #ccac93
+    49: #ccac93,
+    "berry_red": #b8256f,
+    "red": #db4035,
+    "orange": #f93,
+    "yellow": #fad000,
+    "olive_green": #afb83b,
+    "lime_green": #7ecc49,
+    "green": #299438,
+    "mint_green": #6accbc,
+    "teal": #158fad,
+    "sky_blue": #14aaf5,
+    "light_blue": #96c3eb,
+    "blue": #4073ff,
+    "grape": #884dff,
+    "violet": #af38eb,
+    "lavendar": #eb96eb,
+    "magenta": #e05194,
+    "salmon": #ff8d85,
+    "charcoal": #808080,
+    "grey": #b8b8b8,
+    "taupe": #ccac93
 );
 
 @each $colorID, $colorCode in $todoist-colors {
@@ -65,7 +84,8 @@ $col6: minmax(0, 27px);
 .tdf-grid-xxx { @include grid-cols($col4, $col5, $col6); }
 
 .tdf-heading {
-    grid-column: 1 / - 1;
+    grid-column-start: 1;
+    grid-column-end: - 1;
     margin-top: 10px;
     margin-bottom: 10px;
     border-bottom: 1px solid #666;
@@ -84,7 +104,8 @@ $col6: minmax(0, 27px);
 }
 
 .tdf-empty {
-    grid-column: 2 / - 1;
+    grid-column-start: 2;
+    grid-column-end: - 1;
     margin-top: 2px;
     margin-bottom: 2px;
     text-align: left;

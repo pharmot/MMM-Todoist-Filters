@@ -230,6 +230,13 @@ The following can be configured for each criteria set.  Multiple criteria sets c
             <b>Possible values:</b> <code>array of numbers</code> &ndash; <code>1</code> through <code>4</code><br>
             <b>Default:</b> <code>[ ]</code> <i>(any priority)</i></td>
     </tr>
+    <tr>
+        <td><code>description</code></td>
+        <td>Description for a set of criteria <i>(used for debugging only)</i><br><br>
+            <b>Example:</b> <code>Inbox next 3 days</code><br>
+            <b>Possible values:</b> <code>string</code><br>
+            <b>Default:</b> <i>(empty)</i></td>
+    </tr>
 </tbody>
 </table>
 
