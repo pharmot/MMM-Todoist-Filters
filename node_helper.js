@@ -30,7 +30,7 @@ module.exports = NodeHelper.create({
     const options = {
       hostname: "api.todoist.com",
       port: 443,
-      path: "/sync/v9/sync",
+      path: "/api/v1/sync",
       method: 'POST',
       headers: {
         "content-type": "application/x-www-form-urlencoded",
