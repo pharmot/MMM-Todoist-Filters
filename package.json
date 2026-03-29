@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/pharmot/MMM-Todoist-Filters#readme",
   "dependencies": {
-    "moment": "^2.29.3"
+    "moment": "^2.30.1"
   }
 }
